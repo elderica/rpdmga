@@ -128,11 +128,28 @@ mod Core {
     }
 
     impl SM83 {
-        fn fetch_byte(&mut self, mb: Motherboard) -> u8 {
+        fn fetch_decode_execute(&mut self, mb: &Motherboard) {
+            let address = self.registers.pc;
+            let opcode = mb.memory_map.read_byte_at(address);
+            self.decode_execute(mb, opcode);
+            self.registers.pc = address.wrapping_add(1);
+        }
+
+        fn decode_execute(&self, mb: &Motherboard, opcode: u8) {
+            todo!()
+        }
+
+        fn fetch_byte(&mut self, mb: &Motherboard) -> u8 {
             let address = self.registers.pc;
             let byte = mb.memory_map.read_byte_at(address);
             self.registers.pc = address.wrapping_add(1);
             byte
+        }
+
+        fn fetch_word(&mut self, mb: &Motherboard) -> u16 {
+            let low = self.fetch_byte(mb);
+            let high = self.fetch_byte(mb);
+            u16::from_le_bytes([low, high])
         }
     }
 
