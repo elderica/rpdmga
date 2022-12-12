@@ -42,6 +42,7 @@ mod Core {
         }
     }
 
+    #[derive(Clone, Copy)]
     enum Reg8 {
         A,
         F,
@@ -53,12 +54,30 @@ mod Core {
         L,
     }
 
+    #[derive(Clone, Copy)]
     enum Reg16 {
         AF,
         BC,
         DE,
         HL,
     }
+
+    trait In8<S>
+    where
+        S: Copy,
+    {
+        fn read(&mut self, mb: &mut Motherboard, source: S) -> u8;
+    }
+
+    trait Out8<D>
+    where
+        D: Copy,
+    {
+        fn write(&mut self, md: &mut Motherboard, destination: D, byte: u8);
+    }
+
+    #[derive(Clone, Copy)]
+    struct Immediate8;
 
     #[derive(Default)]
     struct RegisterFile {
@@ -118,6 +137,27 @@ mod Core {
                     self.h = (word >> 8) as u8;
                     self.l = word as u8;
                 }
+            }
+        }
+    }
+
+    impl In8<Immediate8> for SM83 {
+        fn read(&mut self, mb: &mut Motherboard, _: Immediate8) -> u8 {
+            self.fetch_byte(mb)
+        }
+    }
+
+    impl In8<Reg8> for SM83 {
+        fn read(&mut self, mb: &mut Motherboard, source: Reg8) -> u8 {
+            match source {
+                Reg8::A => self.registers.a,
+                Reg8::F => self.registers.f.bits,
+                Reg8::B => self.registers.b,
+                Reg8::C => self.registers.c,
+                Reg8::D => self.registers.d,
+                Reg8::E => self.registers.e,
+                Reg8::H => self.registers.h,
+                Reg8::L => self.registers.l,
             }
         }
     }
